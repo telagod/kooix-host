@@ -82,7 +82,7 @@ Kooix Host Manager 是一款现代化的 Hosts 文件管理工具，支持多订
 
 #### 从 Release 下载（推荐）
 
-前往 [Releases](https://github.com/yourusername/kooix-host/releases) 页面下载对应平台的安装包：
+前往 [Releases](https://github.com/telagod/kooix-host/releases) 页面下载对应平台的安装包：
 
 - **Windows**: `kooix-host-manager_x.x.x_x64_en-US.msi`
 - **macOS**: `kooix-host-manager_x.x.x_x64.dmg`
@@ -92,7 +92,7 @@ Kooix Host Manager 是一款现代化的 Hosts 文件管理工具，支持多订
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/kooix-host.git
+git clone https://github.com/telagod/kooix-host.git
 cd kooix-host/frontend
 
 # 安装依赖
@@ -260,8 +260,8 @@ frontend/
 
 ## 📮 联系方式
 
-- 项目主页: [https://github.com/yourusername/kooix-host](https://github.com/yourusername/kooix-host)
-- 问题反馈: [Issues](https://github.com/yourusername/kooix-host/issues)
+- 项目主页: [https://github.com/telagod/kooix-host](https://github.com/telagod/kooix-host)
+- 问题反馈: [Issues](https://github.com/telagod/kooix-host/issues)
 
 ---
 
@@ -269,6 +269,6 @@ frontend/
 
 **如果这个项目对你有帮助，请给一个 ⭐️ Star 支持一下！**
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by telagod
 
 </div>

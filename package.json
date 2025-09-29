@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "description": "轻量化全平台 Hosts 多源聚合订阅更新工具",
-  "author": "Your Name <your.email@example.com>",
+  "author": "telagod <telagod@users.noreply.github.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/kooix-host"
+    "url": "https://github.com/telagod/kooix-host"
   },
   "keywords": [
     "hosts",
