@@ -1,0 +1,116 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            os: 'macOS'
+            target: 'x86_64-apple-darwin'
+            args: '--target x86_64-apple-darwin'
+          - platform: 'macos-latest'
+            os: 'macOS-ARM'
+            target: 'aarch64-apple-darwin'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            os: 'Linux'
+            target: 'x86_64-unknown-linux-gnu'
+            args: ''
+          - platform: 'windows-latest'
+            os: 'Windows'
+            target: 'x86_64-pc-windows-msvc'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev \
+            libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Kooix Host Manager ${{ github.ref_name }}'
+          releaseBody: |
+            ## 🎉 Kooix Host Manager ${{ github.ref_name }}
+
+            ### 下载说明
+            - **Windows**: 下载 `.msi` 文件
+            - **macOS (Intel)**: 下载 `x86_64.dmg` 文件
+            - **macOS (Apple Silicon)**: 下载 `aarch64.dmg` 文件
+            - **Linux (Debian/Ubuntu)**: 下载 `.deb` 文件
+            - **Linux (通用)**: 下载 `.AppImage` 文件
+
+            ### 更新日志
+            查看完整更新日志请访问 [CHANGELOG.md](https://github.com/telagod/kooix-host/blob/main/CHANGELOG.md)
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  build-universal-macos:
+    name: Build Universal macOS
+    runs-on: macos-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Universal macOS app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Kooix Host Manager ${{ github.ref_name }}'
+          releaseDraft: true
+          prerelease: false
+          args: '--target universal-apple-darwin'
