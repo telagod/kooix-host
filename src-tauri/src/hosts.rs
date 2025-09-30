@@ -2,6 +2,8 @@
 use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use std::process::Command;
 
 /// 获取系统 hosts 文件路径
@@ -44,9 +46,9 @@ pub fn write_hosts(content: &str) -> Result<()> {
             // Windows: 需要管理员权限
             #[cfg(target_os = "windows")]
             {
-                return Err(anyhow::anyhow!(
+                Err(anyhow::anyhow!(
                     "无法写入 hosts 文件，请以管理员身份运行程序"
-                ));
+                ))
             }
         }
     }
