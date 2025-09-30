@@ -58,8 +58,7 @@ fn write_hosts_with_sudo(content: &str, hosts_path: &PathBuf) -> Result<()> {
     // 将内容写入临时文件
     let temp_dir = std::env::temp_dir();
     let temp_file = temp_dir.join(format!("kooix_hosts_{}", chrono::Local::now().timestamp()));
-    fs::write(&temp_file, content)
-        .with_context(|| format!("无法写入临时文件: {:?}", temp_file))?;
+    fs::write(&temp_file, content).with_context(|| format!("无法写入临时文件: {:?}", temp_file))?;
 
     log::info!("使用 pkexec 提权写入 hosts 文件");
 

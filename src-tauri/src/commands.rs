@@ -2,8 +2,8 @@
 use crate::{config, fetcher, hosts};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use tauri::State;
 use std::sync::Mutex;
+use tauri::State;
 
 /// 应用状态
 pub struct AppState {
@@ -54,10 +54,7 @@ pub fn get_config(state: State<AppState>) -> ApiResponse<config::AppConfig> {
 
 /// 保存配置
 #[tauri::command]
-pub fn save_config(
-    new_config: config::AppConfig,
-    state: State<AppState>,
-) -> ApiResponse<()> {
+pub fn save_config(new_config: config::AppConfig, state: State<AppState>) -> ApiResponse<()> {
     match config::save_config(&new_config) {
         Ok(_) => {
             let mut config = state.config.lock().unwrap();
