@@ -1,6 +1,6 @@
 // api.ts - Tauri API 调用封装
 import { invoke } from '@tauri-apps/api/core';
-import type { AppConfig, ApiResponse } from './types';
+import type { AppConfig, ApiResponse, ConnectivityTestResult } from './types';
 
 export async function readHostsFile(): Promise<string> {
   const response: ApiResponse<string> = await invoke('read_hosts_file');
@@ -47,4 +47,28 @@ export async function testSource(url: string): Promise<string> {
     throw new Error(response.error || '测试订阅源失败');
   }
   return response.data || '';
+}
+
+export async function testConnectivity(domain: string): Promise<ConnectivityTestResult> {
+  const response: ApiResponse<ConnectivityTestResult> = await invoke('test_connectivity', { domain });
+  if (!response.success) {
+    throw new Error(response.error || '测试域名连通性失败');
+  }
+  return response.data!;
+}
+
+export async function testMultipleConnectivity(domains: string[]): Promise<ConnectivityTestResult[]> {
+  const response: ApiResponse<ConnectivityTestResult[]> = await invoke('test_multiple_connectivity', { domains });
+  if (!response.success) {
+    throw new Error(response.error || '批量测试域名连通性失败');
+  }
+  return response.data!;
+}
+
+export async function testHostsConnectivity(hostsContent: string): Promise<ConnectivityTestResult[]> {
+  const response: ApiResponse<ConnectivityTestResult[]> = await invoke('test_hosts_connectivity', { hostsContent });
+  if (!response.success) {
+    throw new Error(response.error || '测试 hosts 连通性失败');
+  }
+  return response.data!;
 }

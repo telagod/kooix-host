@@ -125,3 +125,36 @@ pub async fn test_source(url: String) -> Result<ApiResponse<String>, String> {
         Err(e) => Ok(ApiResponse::err(e.to_string())),
     }
 }
+
+/// 测试单个域名连通性
+#[tauri::command]
+pub async fn test_connectivity(
+    domain: String,
+) -> Result<ApiResponse<fetcher::ConnectivityTestResult>, String> {
+    let result = fetcher::test_domain_connectivity(&domain).await;
+    Ok(ApiResponse::ok(result))
+}
+
+/// 批量测试多个域名连通性
+#[tauri::command]
+pub async fn test_multiple_connectivity(
+    domains: Vec<String>,
+) -> Result<ApiResponse<Vec<fetcher::ConnectivityTestResult>>, String> {
+    let results = fetcher::test_multiple_domains(domains).await;
+    Ok(ApiResponse::ok(results))
+}
+
+/// 从 hosts 内容中提取关键域名并测试连通性
+#[tauri::command]
+pub async fn test_hosts_connectivity(
+    hosts_content: String,
+) -> Result<ApiResponse<Vec<fetcher::ConnectivityTestResult>>, String> {
+    let domains = fetcher::extract_test_domains(&hosts_content);
+    if domains.is_empty() {
+        return Ok(ApiResponse::err(
+            "未能从 hosts 内容中提取到可测试的域名".to_string(),
+        ));
+    }
+    let results = fetcher::test_multiple_domains(domains).await;
+    Ok(ApiResponse::ok(results))
+}

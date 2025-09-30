@@ -1,8 +1,9 @@
 // Editor.tsx - Hosts 文件编辑器页面（原生App风格）
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Save, RotateCcw, FileText, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Save, RotateCcw, FileText, AlertCircle, X } from 'lucide-react';
 import { readHostsFile } from '@/api';
 import { useTheme } from '@/hooks/useTheme';
 import CodeMirror from '@uiw/react-codemirror';
@@ -15,6 +16,7 @@ export function Editor() {
   const [originalContent, setOriginalContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showWarning, setShowWarning] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -120,12 +122,21 @@ export function Editor() {
       </div>
 
       {/* 警告提示 */}
-      <div className="flex gap-3 p-4 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/50">
-        <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-orange-800 dark:text-orange-200">
-          <strong>注意：</strong>直接编辑 hosts 文件需要谨慎操作。错误的配置可能导致网络问题。建议在修改前先备份文件。
+      {showWarning && (
+        <div className="flex gap-3 p-4 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/50 relative">
+          <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-orange-800 dark:text-orange-200 flex-1">
+            <strong>注意:</strong>直接编辑 hosts 文件需要谨慎操作。错误的配置可能导致网络问题。建议在修改前先备份文件。
+          </div>
+          <button
+            onClick={() => setShowWarning(false)}
+            className="text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded p-1 transition-colors"
+            aria-label="关闭警告"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* 编辑器容器 */}
       <Card className="overflow-hidden border-2">
@@ -141,9 +152,8 @@ export function Editor() {
             <CodeMirror
               value={content}
               onChange={(value) => setContent(value)}
-              height="calc(100vh - 400px)"
-              minHeight="400px"
-              maxHeight="600px"
+              height="calc(100vh - 350px)"
+              minHeight="450px"
               theme={theme === 'dark' ? vscodeDark : vscodeLight}
               extensions={[EditorView.lineWrapping]}
               basicSetup={{

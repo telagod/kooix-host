@@ -50,7 +50,23 @@ pub fn load_config() -> Result<AppConfig> {
     }
 
     let content = fs::read_to_string(&config_path)?;
-    let config: AppConfig = serde_json::from_str(&content)?;
+    let mut config: AppConfig = serde_json::from_str(&content)?;
+
+    // 配置迁移：添加新的默认订阅源（如果不存在）
+    let default_sources = crate::fetcher::get_default_sources();
+    let existing_urls: Vec<String> = config.sources.iter().map(|s| s.url.clone()).collect();
+
+    for default_source in default_sources {
+        if !existing_urls.contains(&default_source.url) {
+            log::info!("添加新的默认订阅源: {}", default_source.name);
+            config.sources.push(default_source);
+        }
+    }
+
+    // 如果有新源被添加，保存配置
+    if config.sources.len() > existing_urls.len() {
+        save_config(&config)?;
+    }
 
     Ok(config)
 }

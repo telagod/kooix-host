@@ -126,8 +126,18 @@ export function Sources({ config, onConfigChange }: SourcesProps) {
         </div>
       )}
 
-      {/* 添加按钮 */}
-      <div className="flex justify-end">
+      {/* 顶部统计和操作栏 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="text-2xl font-bold">
+              {localConfig.sources.length} <span className="text-sm font-normal text-muted-foreground">个订阅源</span>
+            </div>
+            <div className="text-sm text-muted-foreground mt-0.5">
+              已启用 {localConfig.sources.filter(s => s.enabled).length} 个
+            </div>
+          </div>
+        </div>
         <Button onClick={handleAddSource} variant="default" className="btn-flat">
           <Plus className="w-4 h-4 mr-2" />
           添加订阅源
@@ -299,21 +309,6 @@ export function Sources({ config, onConfigChange }: SourcesProps) {
       {localConfig.sources.length === 0 && (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 text-muted-foreground/30 mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <ellipse cx="12" cy="5" rx="9" ry="3" />
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
-              </svg>
-            </div>
             <p className="text-muted-foreground mb-4 text-center">
               还没有添加任何订阅源
               <br />
