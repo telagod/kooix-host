@@ -30,7 +30,7 @@ pub fn write_hosts(content: &str) -> Result<()> {
 
     // 先尝试直接写入
     match fs::write(&hosts_path, content) {
-        Ok(_) => return Ok(()),
+        Ok(_) => Ok(()),
         Err(e) => {
             log::warn!("直接写入失败: {}, 尝试使用 sudo 提权", e);
 
@@ -38,7 +38,7 @@ pub fn write_hosts(content: &str) -> Result<()> {
             #[cfg(any(target_os = "linux", target_os = "macos"))]
             {
                 write_hosts_with_sudo(content, &hosts_path)?;
-                return Ok(());
+                Ok(())
             }
 
             // Windows: 需要管理员权限
@@ -66,7 +66,7 @@ fn write_hosts_with_sudo(content: &str, hosts_path: &PathBuf) -> Result<()> {
     let output = Command::new("pkexec")
         .arg("cp")
         .arg(&temp_file)
-        .arg(&hosts_path)
+        .arg(hosts_path)
         .output();
 
     match output {
@@ -89,7 +89,7 @@ fn write_hosts_with_sudo(content: &str, hosts_path: &PathBuf) -> Result<()> {
         .arg("-S") // 从 stdin 读取密码
         .arg("cp")
         .arg(&temp_file)
-        .arg(&hosts_path)
+        .arg(hosts_path)
         .output()
         .with_context(|| "无法执行 sudo 命令")?;
 
