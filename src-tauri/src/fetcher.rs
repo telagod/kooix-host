@@ -47,10 +47,10 @@ pub fn get_default_sources() -> Vec<HostSource> {
         },
         HostSource {
             name: "GitHub Fast Access".to_string(),
-            url: "https://raw.githubusercontent.com/namegenliang/fast-github-access/main/hosts.txt".to_string(),
+            url: "https://raw.githubusercontent.com/namegenliang/fast-github-access/main/hosts.txt"
+                .to_string(),
             enabled: false,
         },
-
         // Steam 游戏平台加速
         HostSource {
             name: "Steam 社区加速 (完整)".to_string(),
@@ -59,24 +59,22 @@ pub fn get_default_sources() -> Vec<HostSource> {
         },
         HostSource {
             name: "Steam 社区加速 (Steam only)".to_string(),
-            url: "https://raw.githubusercontent.com/Clov614/SteamHostSync/main/Hosts_steam".to_string(),
+            url: "https://raw.githubusercontent.com/Clov614/SteamHostSync/main/Hosts_steam"
+                .to_string(),
             enabled: false,
         },
-
         // Docker Registry 加速
         HostSource {
             name: "Docker Registry 加速".to_string(),
             url: "https://raw.githubusercontent.com/Clov614/SteamHostSync/main/Hosts".to_string(),
             enabled: false,
         },
-
         // 综合加速源
         HostSource {
             name: "Google & Microsoft 服务".to_string(),
             url: "https://raw.githubusercontent.com/laucyun/hosts/master/hosts".to_string(),
             enabled: false,
         },
-
         // 镜像备用源 (使用 CDN 加速)
         HostSource {
             name: "GitHub520 (镜像加速)".to_string(),
