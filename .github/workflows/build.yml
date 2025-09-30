@@ -1,35 +1,39 @@
-name: Build & Release
+name: Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
 jobs:
   build:
-    name: Build on ${{ matrix.platform }}
+    name: Build ${{ matrix.platform }} (${{ matrix.arch }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: 'macos-latest'
-            os: 'macOS'
+            arch: 'x86_64'
             target: 'x86_64-apple-darwin'
             args: '--target x86_64-apple-darwin'
           - platform: 'macos-latest'
-            os: 'macOS-ARM'
+            arch: 'aarch64'
             target: 'aarch64-apple-darwin'
             args: '--target aarch64-apple-darwin'
           - platform: 'ubuntu-22.04'
-            os: 'Linux'
+            arch: 'x86_64'
             target: 'x86_64-unknown-linux-gnu'
             args: ''
           - platform: 'windows-latest'
-            os: 'Windows'
+            arch: 'x86_64'
             target: 'x86_64-pc-windows-msvc'
             args: ''
 
@@ -43,11 +47,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: Install dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -69,16 +79,30 @@ jobs:
           releaseBody: |
             ## 🎉 Kooix Host Manager ${{ github.ref_name }}
 
-            ### 下载说明
-            - **Windows**: 下载 `.msi` 文件
-            - **macOS (Intel)**: 下载 `x86_64.dmg` 文件
-            - **macOS (Apple Silicon)**: 下载 `aarch64.dmg` 文件
-            - **Linux (Debian/Ubuntu)**: 下载 `.deb` 文件
-            - **Linux (通用)**: 下载 `.AppImage` 文件
+            ### 📦 安装包下载
+            请根据您的操作系统选择对应的安装包：
 
-            ### 更新日志
-            查看完整更新日志请访问 [CHANGELOG.md](https://github.com/telagod/kooix-host/blob/main/CHANGELOG.md)
-          releaseDraft: true
+            - **Windows**: `.msi` 或 `-setup.exe` (NSIS安装程序)
+            - **macOS (Intel)**: `x86_64.dmg` 或 `x86_64.app.tar.gz`
+            - **macOS (Apple Silicon)**: `aarch64.dmg` 或 `aarch64.app.tar.gz`
+            - **macOS (Universal)**: `universal.dmg` (同时支持 Intel 和 Apple Silicon)
+            - **Linux (Debian/Ubuntu)**: `.deb`
+            - **Linux (通用)**: `.AppImage`
+
+            ### ✨ 功能特性
+            - 🚀 轻量化跨平台 Hosts 管理工具
+            - 📡 支持多订阅源管理和自动更新
+            - ✏️ 内置 CodeMirror 编辑器,支持语法高亮
+            - 🌓 支持亮色/暗色主题切换
+            - ⏰ 自动更新配置和定时任务
+            - 🔍 域名连通性测试功能
+
+            ### 📝 更新日志
+            查看 [Commits](https://github.com/telagod/kooix-host/commits/${{ github.ref_name }}) 了解详细更新内容
+
+            ---
+            *由 GitHub Actions 自动构建 🤖*
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
 
@@ -95,11 +119,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: Install frontend dependencies
         run: npm ci
@@ -111,6 +141,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Kooix Host Manager ${{ github.ref_name }}'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: '--target universal-apple-darwin'
