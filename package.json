@@ -1,7 +1,7 @@
 {
   "name": "kooix-host-manager",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "轻量化全平台 Hosts 多源聚合订阅更新工具",
   "author": "telagod <telagod@users.noreply.github.com>",
   "license": "MIT",
