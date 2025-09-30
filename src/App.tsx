@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { LayoutDashboard, Database, FileEdit, Settings as SettingsIcon, Moon, Sun } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { useTheme } from '@/hooks/useTheme';
 import { AutoUpdateProvider } from './contexts/AutoUpdateContext';
 import { getConfig } from './api';
 import type { AppConfig } from './types';
@@ -79,35 +80,31 @@ function AppContent() {
         </div>
 
         {/* 导航标签页 */}
-        <Tabs value={activeTab} className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className="flex-1 flex flex-col">
           <TabsList className="w-full grid grid-cols-4 mb-6 h-10 sm:h-11 bg-muted/50">
             <TabsTrigger
-              active={activeTab === 'dashboard'}
-              onClick={() => setActiveTab('dashboard')}
+              value="dashboard"
               className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-background"
             >
               <LayoutDashboard className="w-4 h-4" />
               <span className="hidden sm:inline">仪表盘</span>
             </TabsTrigger>
             <TabsTrigger
-              active={activeTab === 'sources'}
-              onClick={() => setActiveTab('sources')}
+              value="sources"
               className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-background"
             >
               <Database className="w-4 h-4" />
               <span className="hidden sm:inline">订阅源</span>
             </TabsTrigger>
             <TabsTrigger
-              active={activeTab === 'editor'}
-              onClick={() => setActiveTab('editor')}
+              value="editor"
               className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-background"
             >
               <FileEdit className="w-4 h-4" />
               <span className="hidden sm:inline">编辑器</span>
             </TabsTrigger>
             <TabsTrigger
-              active={activeTab === 'settings'}
-              onClick={() => setActiveTab('settings')}
+              value="settings"
               className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-background"
             >
               <SettingsIcon className="w-4 h-4" />
