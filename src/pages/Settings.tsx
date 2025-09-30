@@ -2,9 +2,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Settings2, Moon, Sun, Info, Clock } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAutoUpdate } from '@/contexts/AutoUpdateContext';
+import { Moon, Sun, Info, Clock } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { useAutoUpdate } from '@/hooks/useAutoUpdate';
 
 export function Settings() {
   const { theme, toggleTheme } = useTheme();

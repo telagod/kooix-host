@@ -77,7 +77,10 @@ export function Sources({ config, onConfigChange }: SourcesProps) {
     setLocalConfig(newConfig);
   };
 
-  const handleSaveSource = async (index: number) => {
+  const handleSaveSource = async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _index: number
+  ) => {
     if (!localConfig) return;
     try {
       await saveConfig(localConfig);

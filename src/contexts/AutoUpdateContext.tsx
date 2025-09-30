@@ -1,5 +1,5 @@
 // AutoUpdateContext.tsx - 自动更新上下文
-import { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { createContext, useEffect, useState, useRef, useCallback } from 'react';
 import { updateHosts } from '@/api';
 
 interface AutoUpdateContextType {
@@ -35,7 +35,7 @@ export function AutoUpdateProvider({ children }: { children: React.ReactNode }) 
     localStorage.setItem('kooix-auto-update-interval', hours.toString());
   };
 
-  const performUpdate = async () => {
+  const performUpdate = useCallback(async () => {
     try {
       await updateHosts();
       const now = new Date();
@@ -45,7 +45,7 @@ export function AutoUpdateProvider({ children }: { children: React.ReactNode }) 
     } catch (error) {
       console.error('自动更新失败:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('kooix-auto-update-enabled', enabled.toString());
@@ -80,7 +80,7 @@ export function AutoUpdateProvider({ children }: { children: React.ReactNode }) 
         clearInterval(timerRef.current);
       }
     };
-  }, [enabled, intervalHours]);
+  }, [enabled, intervalHours, lastUpdate, performUpdate]);
 
   return (
     <AutoUpdateContext.Provider
@@ -97,10 +97,5 @@ export function AutoUpdateProvider({ children }: { children: React.ReactNode }) 
   );
 }
 
-export function useAutoUpdate() {
-  const context = useContext(AutoUpdateContext);
-  if (context === undefined) {
-    throw new Error('useAutoUpdate must be used within AutoUpdateProvider');
-  }
-  return context;
-}
+export { AutoUpdateContext };
+export type { AutoUpdateContextType };
