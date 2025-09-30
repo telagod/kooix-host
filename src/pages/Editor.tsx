@@ -1,8 +1,7 @@
 // Editor.tsx - Hosts 文件编辑器页面（原生App风格）
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Save, RotateCcw, FileText, AlertCircle, X } from 'lucide-react';
 import { readHostsFile } from '@/api';
 import { useTheme } from '@/hooks/useTheme';

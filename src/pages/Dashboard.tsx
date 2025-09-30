@@ -1,6 +1,6 @@
 // Dashboard.tsx - 仪表盘页面
 import { useState } from 'react';
-import { RefreshCw, Save, Clock, AlertCircle, Activity, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, Save, AlertCircle, Activity, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
