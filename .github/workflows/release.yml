@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-22.04
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Kooix Host Manager v${{ steps.get_version.outputs.version }}
+          body: |
+            ## 🎉 Kooix Host Manager v${{ steps.get_version.outputs.version }}
+
+            ### 📦 安装包下载
+            请根据您的操作系统选择对应的安装包：
+
+            - **Windows**: `.msi` 或 `.exe` (NSIS安装程序)
+            - **macOS**: `.dmg` 或 `.app`
+            - **Linux**: `.deb` (Debian/Ubuntu) 或 `.AppImage` (通用)
+
+            ### 🔄 更新内容
+            请查看下方的 Commits 记录
+
+            ---
+            *由 GitHub Actions 自动构建 🤖*
+          draft: false
+          prerelease: false
+
+  build-release:
+    name: Build Release - ${{ matrix.settings.platform }}
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            bundle_ext: 'dmg,app'
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            bundle_ext: 'dmg,app'
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundle_ext: 'deb,AppImage'
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundle_ext: 'msi,nsis'
+
+    runs-on: ${{ matrix.settings.platform }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.settings.target }}
+
+      # Rust 缓存
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-release-${{ matrix.settings.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-${{ matrix.settings.target }}-
+            ${{ runner.os }}-cargo-release-
+            ${{ runner.os }}-cargo-
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.settings.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev \
+            libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app (release)
+        run: npm run tauri build -- --target ${{ matrix.settings.target }}
+
+      # 上传所有生成的安装包
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.dmg
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.app.tar.gz
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.deb
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.AppImage
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.msi
+            src-tauri/target/${{ matrix.settings.target }}/release/bundle/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

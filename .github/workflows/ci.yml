@@ -6,15 +6,56 @@ on:
   pull_request:
     branches: [ main, dev ]
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
 jobs:
+  # 代码检查任务（快速失败）
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check Rust format
+        working-directory: src-tauri
+        run: cargo fmt -- --check
+
+  # 并行测试任务
   test:
     name: Test on ${{ matrix.platform }}
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-22.04, windows-latest]
+        settings:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.settings.platform }}
 
     steps:
       - name: Checkout repository
@@ -24,14 +65,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          components: clippy
+          targets: ${{ matrix.settings.target }}
+
+      # Rust 缓存
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: matrix.settings.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev \
@@ -40,18 +96,24 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Check Rust code
+      - name: Run Clippy
         working-directory: src-tauri
-        run: |
-          cargo fmt -- --check
-          cargo clippy -- -D warnings
+        run: cargo clippy --target ${{ matrix.settings.target }} -- -D warnings
 
       - name: Run Rust tests
         working-directory: src-tauri
-        run: cargo test
+        run: cargo test --target ${{ matrix.settings.target }}
 
-      - name: Build app (test)
-        run: npm run tauri build -- --debug
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build Tauri app (debug)
+        run: npm run tauri build -- --debug --target ${{ matrix.settings.target }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.settings.platform }}-${{ matrix.settings.target }}
+          path: |
+            src-tauri/target/${{ matrix.settings.target }}/debug/bundle/
+          retention-days: 7
